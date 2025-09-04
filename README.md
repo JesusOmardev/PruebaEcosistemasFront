@@ -1,12 +1,38 @@
-# React + Vite
+# Front To-Do App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Interfaz web para gestionar tareas (crear, listar, marcar como completadas y eliminar), construida con **React** y empaquetada con **Vite**. Pensada para ser ligera, rápida y fácil de desplegar.
 
-Currently, two official plugins are available:
+> Si estás evaluando el proyecto, revisa primero la sección **Instalación rápida** y luego **Scripts disponibles**.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## Expanding the ESLint configuration
+## 🚀 Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **Framework:** React (SPA)
+- **Bundler/Dev server:** Vite (HMR)
+- **Linter:** ESLint (config en `eslint.config.js`)
+- **Lenguajes:** JavaScript, CSS, HTML
+
+> Este front puede funcionar en modo *standalone* (estado en memoria / localStorage) o conectado a una API. Completa la sección **Configuración** si usas backend.
+
+---
+
+## 📦 Requisitos
+
+- Node.js LTS (18+ recomendado)
+- npm (o pnpm / yarn, ajusta los comandos si usas otro gestor)
+
+---
+
+## 🧪 Instalación rápida
+
+```bash
+# 1) Clona el repositorio
+git clone https://github.com/JesusOmardev/front-to-do-app.git
+cd front-to-do-app
+
+# 2) Instala dependencias
+npm install
+
+# 3) Levanta el entorno de desarrollo
+npm run dev
