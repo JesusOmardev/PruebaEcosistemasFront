@@ -8,13 +8,7 @@ export default function TaskList({ items, onToggle, onDelete, onEdit }) {
     <Paper sx={{ p: 1 }}>
       <List>
         {items.map((t) => (
-          <TaskItem
-            key={t.id}
-            task={t}
-            onToggle={onToggle}
-            onDelete={onDelete}
-            onEdit={onEdit}        // ← pásalo al hijo
-          />
+          <TaskItem key={t.id} task={t} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} />
         ))}
       </List>
     </Paper>

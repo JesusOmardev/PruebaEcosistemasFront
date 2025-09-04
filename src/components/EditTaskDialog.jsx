@@ -1,27 +1,37 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Stack } from "@mui/material";
 
-export default function EditTaskDialog({ open, onClose, initial, onSave, loading=false }) {
+export default function EditTaskDialog({ open, onClose, initial, onSave, loading = false }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
 
   useEffect(() => {
     setTitle(initial?.title ?? "");
     setDescription(initial?.description ?? "");
-  }, [initial]);
+  }, [initial, open]);
 
-  const disabled = !title.trim() || (
-    title.trim() === (initial?.title ?? "") &&
-    (description.trim() || "") === (initial?.description || "")
-  );
+  const disabled =
+    !title.trim() ||
+    (title.trim() === (initial?.title ?? "") && (description.trim() || "") === (initial?.description || ""));
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>Editar tarea</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 1 }}>
-          <TextField label="Título" value={title} onChange={(e) => setTitle(e.target.value)} autoFocus />
-          <TextField label="Descripción" value={description} onChange={(e) => setDescription(e.target.value)} />
+          <TextField
+            label="Título"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            fullWidth
+            autoFocus
+          />
+          <TextField
+            label="Descripción"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            fullWidth
+          />
         </Stack>
       </DialogContent>
       <DialogActions>

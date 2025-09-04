@@ -21,11 +21,27 @@ export default function App() {
   const [hasMore, setHasMore] = useState(true);
 
   // edición
-  const [editing, setEditing] = useState(null); // tarea seleccionada o null
+  const [editing, setEditing] = useState(null);     // {id, title, description} | null
+  const [savingEdit, setSavingEdit] = useState(false); // <— este es el que falta
 
 
-  function openEdit(task) { setEditing(task); }
-  function closeEdit() { setEditing(null); }
+  function openEdit(task) {
+    setEditing(task);
+  }
+
+  function closeEdit() {
+    setEditing(null);
+  }
+
+  //Notifiaciones:
+  const [toast, setToast] = useState({ open: false, msg: "", severity: "success" });
+  const showSuccess = (msg) => setToast({ open: true, msg, severity: "success" });
+  const showError = (msg) => setToast({ open: true, msg, severity: "error" });
+
+  function handleToastClose(_, reason) {
+    if (reason === "clickaway") return;
+    setToast((t) => ({ ...t, open: false }));
+  }
 
   async function load(reset = false) {
     try {
@@ -68,15 +84,13 @@ export default function App() {
   async function saveEdit(data) {
     try {
       setSavingEdit(true);
-      // Variante A: PATCH
       const updated = await TaskAPI.patch(editing.id, data);
-      // Variante B (si usas PUT): const updated = await TaskAPI.update(editing.id, data);
-
-      // actualiza en memoria
       setItems(prev => prev.map(t => t.id === editing.id ? { ...t, ...updated } : t));
-      closeEdit();
+      setEditing(null);
+      showSuccess("Cambio realizado"); 
     } catch (e) {
       setError(e.message);
+      showError(e.message); 
     } finally {
       setSavingEdit(false);
     }
@@ -104,7 +118,7 @@ export default function App() {
             items={items}
             onToggle={toggleTask}
             onDelete={deleteTask}
-            onEdit={openEdit}       // ← pásalo al TaskList
+            onEdit={openEdit}
           />
           <Stack direction="row" justifyContent="center" sx={{ mt: 2 }}>
             <Button disabled={!hasMore || loading} onClick={() => load(false)}>Cargar más</Button>
@@ -121,6 +135,7 @@ export default function App() {
         initial={editing}
         onClose={closeEdit}
         onSave={saveEdit}
+        loading={savingEdit}
       />
     </Container>
   );

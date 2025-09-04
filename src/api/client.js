@@ -7,8 +7,7 @@ async function request(path, options = {}) {
   });
   if (!res.ok) {
     const payload = await res.json().catch(() => ({}));
-    const message = payload.detail || payload.error || res.statusText;
-    throw new Error(Array.isArray(message) ? message[0].msg : message);
+    throw new Error(payload.detail || payload.error || res.statusText);
   }
   if (res.status === 204) return null;
   return res.json();
@@ -21,6 +20,6 @@ export const TaskAPI = {
   },
   create: (data) => request("/tasks/", { method: "POST", body: JSON.stringify(data) }),
   toggle: (id, completed) => request(`/tasks/${id}`, { method: "PUT", body: JSON.stringify({ completed }) }),
-  patch: (id, data) =>request(`/tasks/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+  patch: (id, data) => request(`/tasks/${id}`, { method: "PATCH", body: JSON.stringify(data) }), 
   remove: (id) => request(`/tasks/${id}`, { method: "DELETE" }),
 };
