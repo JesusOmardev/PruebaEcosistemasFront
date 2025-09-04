@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Container, Typography, Tabs, Tab, Box, Snackbar, Alert, CircularProgress, Button, Stack } from "@mui/material";
+import { Container, Typography, Tabs, Tab, Box, Snackbar, Alert, CircularProgress, Button, Stack, Slide } from "@mui/material";
 import { TaskAPI } from "./api/client";
 import TaskForm from "./components/TaskForm";
 import TaskList from "./components/TaskList";
@@ -9,7 +9,8 @@ export default function App() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  // para deshabilitar el botón mientras se envía
+  const [creating, setCreating] = useState(false);
 
   // filtro por Tabs: todas,  pendientes y completadas
   const [tab, setTab] = useState(0);
@@ -34,14 +35,25 @@ export default function App() {
   }
 
   //Notifiaciones:
-  const [toast, setToast] = useState({ open: false, msg: "", severity: "success" });
-  const showSuccess = (msg) => setToast({ open: true, msg, severity: "success" });
-  const showError = (msg) => setToast({ open: true, msg, severity: "error" });
+  const [success, setSuccess] = useState(null);
+  const showSuccess = (msg) => setSuccess(msg);
+  const [pendingToast, setPendingToast] = useState(null); // cola para mostrar tras cerrar el modal
+  const closeSuccess = () => setSuccess(null);
 
   function handleToastClose(_, reason) {
     if (reason === "clickaway") return;
     setToast((t) => ({ ...t, open: false }));
   }
+
+
+
+  function SlideLeft(props) {               // animación
+    return <Slide {...props} direction="left" />;
+  }
+
+  const [danger, setDanger] = useState(null);
+  const showDanger = (msg) => setDanger(msg);
+  const closeDanger = () => setDanger(null);
 
   async function load(reset = false) {
     try {
@@ -60,11 +72,27 @@ export default function App() {
 
   useEffect(() => { load(true); }, [tab]); // recarga al cambiar filtro
 
+  useEffect(() => {
+    if (editing === null && pendingToast) {
+      showSuccess(pendingToast);
+      setPendingToast(null);
+    }
+  }, [editing, pendingToast]);
+
+
   async function addTask(data) {
     try {
-      const created = await TaskAPI.create(data);
-      setItems((prev) => [created, ...prev]);
-    } catch (e) { setError(e.message); }
+      setCreating(true);
+      const created = await TaskAPI.create(data);   // POST /tasks
+      setItems((prev) => [created, ...prev]);       // prepend
+      showSuccess("Tarea creada");                  // 👈 toast verde
+      return created;                               // para que el form sepa que fue OK
+    } catch (e) {
+      setError(e.message);                          // tu toast rojo
+      throw e;
+    } finally {
+      setCreating(false);
+    }
   }
 
   async function toggleTask(id, completed) {
@@ -76,9 +104,12 @@ export default function App() {
 
   async function deleteTask(id) {
     try {
-      setItems((prev) => prev.filter((t) => t.id !== id)); // optimistic
       await TaskAPI.remove(id);
-    } catch (e) { setError(e.message); load(true); }
+      setItems(prev => prev.filter(t => t.id !== id));
+      showDanger("Tarea eliminada");
+    } catch (e) {
+      setError(e.message);
+    }
   }
 
   async function saveEdit(data) {
@@ -87,10 +118,10 @@ export default function App() {
       const updated = await TaskAPI.patch(editing.id, data);
       setItems(prev => prev.map(t => t.id === editing.id ? { ...t, ...updated } : t));
       setEditing(null);
-      showSuccess("Cambio realizado"); 
+      setPendingToast("Cambio realizado");
+      setEditing(null);// cierra el modal
     } catch (e) {
       setError(e.message);
-      showError(e.message); 
     } finally {
       setSavingEdit(false);
     }
@@ -100,7 +131,7 @@ export default function App() {
     <Container maxWidth="sm" sx={{ py: 4 }}>
       <Typography variant="h4" sx={{ mb: 2, fontWeight: 600 }}>To-Do List</Typography>
 
-      <TaskForm onAdd={addTask} />
+      <TaskForm onAdd={addTask} creating={creating} />
 
       <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>
         <Tabs value={tab} onChange={(_, v) => { setTab(v); setSkip(0); setHasMore(true); }}>
@@ -125,10 +156,28 @@ export default function App() {
           </Stack>
         </>
       )}
-
-      <Snackbar open={!!error} autoHideDuration={4000} onClose={() => setError(null)}>
-        <Alert severity="error" onClose={() => setError(null)}>{error}</Alert>
+      {/* Guardar */}
+      <Snackbar open={!!success} autoHideDuration={3000} onClose={() => setSuccess(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}>
+        <Alert onClose={() => setSuccess(null)} severity="success" variant="filled" sx={{ width: "100%" }}>
+          {success}
+        </Alert>
       </Snackbar>
+
+      {/* Eliminar */}
+      <Snackbar
+        open={!!danger}
+        autoHideDuration={4500}
+        onClose={(_, r) => { if (r !== "clickaway") closeDanger(); }}
+        TransitionComponent={SlideLeft}                       
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+      >
+        <Alert onClose={closeDanger} severity="error" variant="filled" sx={{ width: "100%" }}>
+          {danger}
+        </Alert>
+      </Snackbar>
+
+
 
       <EditTaskDialog
         open={!!editing}
